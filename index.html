@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Wellness Workouts"/>
+<meta name="theme-color" content="#1B3A5C"/>
+<title>Wellness Workouts</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F3F4F6;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+/* Animations */
+@keyframes pip-pop{0%{transform:scale(1)}40%{transform:scale(1.5);background:#3A7D44;border-color:#3A7D44}70%{transform:scale(0.9)}100%{transform:scale(1)}}
+@keyframes ex-burst{0%{box-shadow:0 0 0 0 #3A7D4466}50%{box-shadow:0 0 0 12px #3A7D4400}100%{box-shadow:0 0 0 0 #3A7D4400}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.burst{animation:ex-burst 0.9s ease-out}
+.fadein{animation:fadeIn 0.3s ease-out}
+/* Utility */
+.flex{display:flex;align-items:center}
+.spaceb{justify-content:space-between}
+.col{flex-direction:column}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+</style>
+</head>
+<body>
+
+<!-- WEIGHT SETUP SCREEN -->
+<div id="screen-weight" class="screen active">
+  <div style="min-height:100vh;background:#1B3A5C;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px">
+    <div style="font-size:48px;margin-bottom:8px">🌿</div>
+    <div style="color:#fff;font-weight:800;font-size:26px;text-align:center;line-height:1.2">Holistic Wellness<br>Workout Tracker</div>
+    <div style="color:#B2DDD7;font-size:14px;margin-top:8px;text-align:center">LDL Lowering · Strength · Recovery</div>
+    <div style="background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;margin-top:32px">
+      <div style="font-weight:700;font-size:16px;color:#111827;margin-bottom:4px">Your Weight</div>
+      <div style="font-size:13px;color:#6B7280;margin-bottom:16px">Used to estimate calories burned during each exercise.</div>
+      <div class="flex" style="gap:10px;margin-bottom:12px">
+        <input id="weight-input" type="number" value="125" style="flex:1;min-width:0;font-size:32px;font-weight:700;color:#1B3A5C;border:2px solid #B2DDD7;border-radius:10px;padding:10px 8px;text-align:center;outline:none;width:100%"/>
+        <span style="font-size:16px;color:#6B7280;font-weight:600;flex-shrink:0">lbs</span>
+      </div>
+      <div id="weight-kg" style="font-size:12px;color:#6B7280;margin-bottom:20px;text-align:center">≈ 56.7 kg</div>
+      <button onclick="startApp()" style="width:100%;background:#2A7D6E;color:#fff;border:none;border-radius:12px;padding:14px 0;font-size:17px;font-weight:800">Start Training →</button>
+    </div>
+    <div style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:20px;text-align:center">Calories estimated via MET values × your weight.<br>Actual burn varies by intensity.</div>
+  </div>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="screen-home" class="screen">
+  <div id="home-header" style="background:#1B3A5C;padding:16px 16px 14px">
+    <div class="flex spaceb">
+      <div>
+        <div style="color:#B2DDD7;font-size:11px;font-weight:600;letter-spacing:1px">HOLISTIC WELLNESS</div>
+        <div style="color:#fff;font-weight:800;font-size:20px">Workout Tracker</div>
+      </div>
+      <div class="flex" style="gap:8px">
+        <button onclick="showHistory()" id="history-btn" style="background:rgba(255,255,255,0.12);border:none;border-radius:10px;color:#B2DDD7;padding:6px 10px;font-size:12px;font-weight:600">📊 History</button>
+        <button onclick="showWeight()" id="weight-btn" style="background:rgba(255,255,255,0.12);border:none;border-radius:10px;color:#B2DDD7;padding:6px 10px;font-size:12px;font-weight:600">⚖️ 125</button>
+      </div>
+    </div>
+  </div>
+  <div id="today-banner" style="display:none;background:#EAF4EB;border-bottom:2px solid #B2DDD7;padding:8px 16px;font-size:13px;color:#3A7D44;font-weight:600;text-align:center"></div>
+  <div style="padding:14px 14px 32px">
+    <div style="font-weight:800;font-size:15px;color:#111827;margin-bottom:3px">Weekly Schedule</div>
+    <div style="font-size:12px;color:#6B7280;margin-bottom:10px">Your core workout rotation</div>
+    <div id="main-workout-cards"></div>
+    <div style="font-weight:800;font-size:15px;color:#111827;margin-top:20px;margin-bottom:3px">Bonus Workouts</div>
+    <div style="font-size:12px;color:#6B7280;margin-bottom:10px">Use anytime for variety or extra movement</div>
+    <div id="bonus-workout-cards"></div>
+    <div style="background:#EDF2F7;border-radius:14px;padding:14px 16px;margin-top:16px">
+      <div style="font-weight:700;font-size:14px;color:#1B3A5C;margin-bottom:10px">📊 Calorie Estimates</div>
+      <div style="font-size:11px;color:#6B7280;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Weekly schedule</div>
+      <div id="cal-main"></div>
+      <div style="border-top:1px solid #E5E7EB;margin:10px 0"></div>
+      <div style="font-size:11px;color:#6B7280;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Bonus workouts</div>
+      <div id="cal-bonus"></div>
+      <div style="border-top:1px solid #E5E7EB;margin-top:8px;padding-top:8px" class="flex spaceb">
+        <div style="font-size:13px;font-weight:700;color:#1B3A5C">Full week (scheduled)</div>
+        <div id="cal-total" style="font-size:14px;font-weight:800;color:#2A7D6E"></div>
+      </div>
+      <div style="font-size:11px;color:#6B7280;margin-top:6px">* Estimates based on MET values × your weight.</div>
+    </div>
+  </div>
+</div>
+
+<!-- WORKOUT SESSION SCREEN -->
+<div id="screen-workout" class="screen">
+  <div id="workout-sticky-header" style="position:sticky;top:0;z-index:50;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)">
+    <div class="flex spaceb" style="margin-bottom:8px">
+      <div class="flex" style="gap:10px;flex:1">
+        <button onclick="backToHome()" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;color:#fff;padding:4px 10px;font-size:18px">←</button>
+        <div style="flex:1">
+          <div id="wh-label" style="color:#fff;font-weight:800;font-size:16px"></div>
+          <div id="wh-subtitle" style="color:rgba(255,255,255,.75);font-size:12px"></div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div id="wh-timer" style="color:#fff;font-weight:700;font-size:15px">⏱ 0:00</div>
+        <div id="wh-cals" style="color:rgba(255,255,255,.8);font-size:12px"></div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.25);border-radius:4px;height:6px">
+      <div id="wh-progress" style="background:#fff;border-radius:4px;height:6px;width:0%;transition:width .4s"></div>
+    </div>
+    <div id="wh-pct" style="color:rgba(255,255,255,.8);font-size:11px;margin-top:3px">0% complete</div>
+  </div>
+  <div id="workout-phases" style="padding:16px 14px 80px"></div>
+</div>
+
+<!-- HISTORY SCREEN -->
+<div id="screen-history" class="screen">
+  <div style="background:#1B3A5C;padding:12px 16px 16px">
+    <div class="flex" style="gap:10px;margin-bottom:14px">
+      <button onclick="backToHome()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;padding:4px 10px;font-size:18px">←</button>
+      <div style="color:#fff;font-weight:800;font-size:18px">📊 30-Day History</div>
+    </div>
+    <div id="hist-stats" class="grid4"></div>
+  </div>
+  <div style="padding:16px 14px 40px">
+    <div style="font-weight:700;font-size:14px;color:#111827;margin-bottom:8px">30-Day Calendar</div>
+    <div style="background:#fff;border-radius:14px;padding:14px 12px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:20px">
+      <div id="cal-day-labels" class="grid7" style="margin-bottom:4px"></div>
+      <div id="cal-grid" class="grid7"></div>
+      <div style="font-size:10px;color:#6B7280;margin-top:10px">Lighter teal = 1 workout &nbsp;●&nbsp; Darker = more &nbsp;●&nbsp; <span style="color:#D4614A">●</span> Today</div>
+    </div>
+    <div style="font-weight:700;font-size:14px;color:#111827;margin-bottom:8px">Recent Sessions</div>
+    <div id="hist-sessions"></div>
+    <div id="hist-buttons" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div id="export-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:24px">
+  <div style="background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:36px;text-align:center">📊</div>
+    <div style="font-weight:800;font-size:19px;color:#1B3A5C;text-align:center;margin-top:8px">New Month — Save Your Progress!</div>
+    <div id="modal-month" style="font-size:13px;color:#6B7280;text-align:center;margin-top:8px;line-height:1.5"></div>
+    <div id="modal-stats" class="grid2" style="background:#EDF2F7;border-radius:12px;padding:12px 14px;margin-top:16px"></div>
+    <div style="margin-top:14px;font-size:12px;color:#6B7280">
+      <div style="font-weight:600;color:#111827;margin-bottom:4px">Excel file includes:</div>
+      <div>📋 Session Log — every workout with date, duration & calories</div>
+      <div style="margin-top:2px">📈 Monthly Summary — totals and per-workout breakdown</div>
+      <div style="margin-top:2px">📅 30-Day Calendar — day-by-day activity view</div>
+    </div>
+    <button onclick="doExport(true)" style="width:100%;background:#2A7D6E;color:#fff;border:none;border-radius:12px;padding:13px 0;font-size:16px;font-weight:800;margin-top:18px">⬇️ Download Excel File</button>
+    <button onclick="closeModal()" style="width:100%;background:none;color:#6B7280;border:none;padding:10px 0;font-size:13px;margin-top:6px">Remind me later</button>
+  </div>
+</div>
+
+<script>
+// ─── COLORS ──────────────────────────────────────────────────────────────────
+const C = {
+  teal:"#2A7D6E",tealLight:"#E6F4F1",tealMid:"#B2DDD7",
+  coral:"#D4614A",coralLight:"#FDECEA",
+  navy:"#1B3A5C",navyLight:"#EDF2F7",
+  green:"#3A7D44",greenLight:"#EAF4EB",
+  gold:"#B8860B",goldLight:"#FDF6E3",
+  lavender:"#7B6EA6",lavLight:"#F0EEF8",
+  gray:"#6B7280",grayLight:"#F3F4F6",grayMid:"#E5E7EB",
+  white:"#FFFFFF",dark:"#111827"
+};
+
+// ─── WORKOUT DATA ─────────────────────────────────────────────────────────────
+const WORKOUTS = {
+  gym:{label:"💪 Gym Full Body",subtitle:"Sun / Tue / Sat — 45 min",color:C.coral,colorLight:C.coralLight,phases:[
+    {name:"🟠 Phase 1 — Warm-Up",duration:"5 min",exercises:[
+      {name:"Backwards Treadmill Walk",type:"timed",seconds:180,met:3.5,note:"1.5–2.5 mph, hold rails lightly. Activates glutes, opens hip flexors."},
+      {name:"Kneeling Twist Stretch & Balance",type:"reps",sets:1,reps:"5 each side",met:2.5,note:"Lunge position, hands behind head. Rotate toward front knee, hold 2 sec."},
+      {name:"Downward Dog to Low Lunge Flow",type:"reps",sets:1,reps:"4 each side",met:2.5,note:"From Down Dog, step one foot forward into Low Lunge. Hold 2 sec, alternate."},
+      {name:"Thread the Needle",type:"reps",sets:1,reps:"5–8 breaths each side",met:2.0,note:"From tabletop, sweep arm up then slide under opposite arm to mat."},
+      {name:"Planks",type:"timed",sets:3,seconds:30,restSeconds:20,met:4.0,note:"Forearms down, body rigid head to heels. Modify: knees down."}
+    ]},
+    {name:"🟢 Phase 2 — Lower Body",duration:"12–15 min",exercises:[
+      {name:"Leg Press (Kaiser or machine)",type:"strength",sets:3,reps:"12",met:5.0,note:"Feet shoulder-width on platform. Press away, lower slowly 3 counts."},
+      {name:"Step-Ups",type:"strength",sets:3,reps:"10 each leg",met:5.0,note:"Step up, drive knee. Hold dumbbells for added challenge."},
+      {name:"Dumbbell Alternating Reverse Lunge",type:"strength",sets:3,reps:"10 each leg",met:4.5,note:"Step back, lower rear knee. Push off front foot to return."},
+      {name:"Kettlebell Squat",type:"strength",sets:3,reps:"12",met:5.0,note:"Hold KB at chest. Feet slightly wider, toes out. Chest tall."}
+    ]},
+    {name:"🔵 Phase 3 — Upper Body & Core",duration:"18–20 min",exercises:[
+      {name:"Kaiser / Cable Rows (double arm)",type:"strength",sets:3,reps:"12",met:4.5,note:"Pull handles to lower chest. Squeeze shoulder blades. Elbows close."},
+      {name:"Shoulder Press (Kaiser or machine)",type:"strength",sets:3,reps:"10–12",met:4.5,note:"Press overhead until arms nearly straight. Core tight, don't arch."},
+      {name:"Shoulder Pull / Lat Pulldown",type:"strength",sets:3,reps:"12",met:4.5,note:"Pull bar to upper chest, elbows toward hips. Critical for posture."},
+      {name:"Cable Trunk Rotation",type:"strength",sets:3,reps:"12 each side",met:3.5,note:"Stand sideways to machine. Rotate torso away, hips still."}
+    ]},
+    {name:"🟣 Phase 4 — Cool Down",duration:"5 min",exercises:[
+      {name:"Treadmill Walk (forward)",type:"timed",seconds:300,met:3.0,note:"2.0–2.5 mph. Let heart rate fully settle. Breathe deeply."}
+    ]}
+  ]},
+  home:{label:"🏠 Home Strength",subtitle:"Friday — 40 min",color:C.lavender,colorLight:C.lavLight,phases:[
+    {name:"🟠 Warm-Up",duration:"8–10 min",exercises:[
+      {name:"Backwards Walk",type:"timed",seconds:180,met:3.0,note:"Walk backwards down a hallway or outside. Activates glutes and hip flexors."},
+      {name:"Cat-Cow",type:"reps",sets:1,reps:"10 reps",met:2.0,note:"On hands and knees. Inhale: drop belly, lift chest. Exhale: round spine."},
+      {name:"Downward Dog to Low Lunge Flow",type:"reps",sets:1,reps:"4 each side",met:2.5,note:"From Down Dog, step foot forward into Low Lunge. Alternate sides."},
+      {name:"Thread the Needle",type:"reps",sets:1,reps:"5–8 breaths each side",met:2.0,note:"From tabletop, sweep arm up then slide under opposite arm."},
+      {name:"Kneeling Twist Stretch & Balance",type:"reps",sets:1,reps:"5 each side",met:2.0,note:"Lunge position. Rotate upper body toward front knee, hold 2 sec."},
+      {name:"Chair Squats (bodyweight)",type:"reps",sets:1,reps:"10 reps",met:3.0,note:"Lower to touch chair, push back up. Keeps knees safe."},
+      {name:"Planks",type:"timed",sets:3,seconds:30,restSeconds:20,met:4.0,note:"Forearms down, body rigid. Build to 45 sec by Week 4."}
+    ]},
+    {name:"🌿 Lower Body",duration:"~15 min",exercises:[
+      {name:"Barbell Squat",type:"strength",sets:3,reps:"8–10",met:5.5,note:"Bar on upper traps. Sit back, chest tall. Start with bar only."},
+      {name:"Dumbbell Alternating Reverse Lunge",type:"strength",sets:3,reps:"10 each leg",met:4.5,note:"Step back, lower knee, push off front foot. Gentler on knees."},
+      {name:"Kettlebell Swing",type:"strength",sets:3,reps:"12–15",met:6.0,note:"Hinge hips, swing to shoulder height. Power from hips, not arms."},
+      {name:"Barbell Romanian Deadlift",type:"strength",sets:3,reps:"10",met:5.0,note:"Hinge at hips, bar along legs, soft knee. Feel hamstring stretch."}
+    ]},
+    {name:"💪 Upper Body",duration:"~12 min",exercises:[
+      {name:"Stability Ball Dumbbell Press",type:"strength",sets:3,reps:"10–12",met:4.5,note:"Upper back on ball, hips up. Core and glutes fire every rep."},
+      {name:"Barbell Bent-Over Row",type:"strength",sets:3,reps:"10–12",met:5.0,note:"Hinge forward, flat back. Pull bar to lower ribs, elbows close."},
+      {name:"Dumbbell Overhead Press",type:"strength",sets:3,reps:"10",met:4.5,note:"Stand tall. Press overhead until arms straight. Core tight."},
+      {name:"Stability Ball Dumbbell Row",type:"strength",sets:3,reps:"12",met:4.0,note:"Draped face-down on ball. Pull both elbows up, squeeze shoulder blades."}
+    ]},
+    {name:"⚪ Core",duration:"~5 min",exercises:[
+      {name:"Dead Bug",type:"strength",sets:2,reps:"8 each side",met:3.5,note:"On back, arms up, knees 90°. Lower opposite arm & leg slowly. Press low back down."},
+      {name:"Stability Ball Jackknife",type:"strength",sets:3,reps:"10–12",met:4.5,note:"Push-up position, shins on ball. Pull knees to chest, hips pike up."}
+    ]},
+    {name:"🟣 Cool Down",duration:"5 min",exercises:[
+      {name:"Outdoor Walk",type:"timed",seconds:300,met:3.0,note:"Easy relaxed pace outside. Let heart rate settle. Fresh air!"}
+    ]}
+  ]},
+  cardio:{label:"🚶 Walk + Stairs",subtitle:"Mon / Wed",color:C.teal,colorLight:C.tealLight,phases:[
+    {name:"Walk Portion",duration:"20–30 min",exercises:[
+      {name:"Brisk Walk",type:"timed",seconds:1500,met:4.0,note:"Brisk pace — can talk but slightly breathless. Target 2,500–4,000 steps."}
+    ]},
+    {name:"Stair Climb",duration:"15–20 min",exercises:[
+      {name:"Stair Climb — Floor 1",type:"check",met:8.0,note:"One step at a time. Hold rail until confident. Walk back DOWN."},
+      {name:"Stair Climb — Floor 2",type:"check",met:8.0,note:""},
+      {name:"Stair Climb — Floor 3",type:"check",met:8.0,note:""},
+      {name:"Stair Climb — Floor 4",type:"check",met:8.0,note:""},
+      {name:"Stair Climb — Floor 5",type:"check",met:8.0,note:""},
+      {name:"Stair Climb — Floor 6",type:"check",met:8.0,note:""},
+      {name:"Stair Climb — Floor 7",type:"check",met:8.0,note:""},
+      {name:"Stair Climb — Floor 8",type:"check",met:8.0,note:""},
+      {name:"Stair Climb — Floor 9",type:"check",met:8.0,note:"Try skipping every other step by Week 4 for more glute work!"},
+      {name:"Stair Climb — Floor 10",type:"check",met:8.0,note:"Great work — 10 floors! 🎉"}
+    ]}
+  ]},
+  yoga:{label:"🧘 Yoga & Recovery",subtitle:"Thursday",color:C.green,colorLight:C.greenLight,phases:[
+    {name:"Video Routine",duration:"~11 min",exercises:[
+      {name:"Cleansing Breaths",type:"check",met:1.5,note:"Sit comfortably. 3–5 slow deep breaths. Set your intention."},
+      {name:"Neck Stretches",type:"check",met:1.8,note:"Drop ear to shoulder each side. Roll chin to chest and back up. Move gently."},
+      {name:"Cat / Cow",type:"check",met:2.0,note:"Hands and knees. Inhale: belly drops, chest lifts. Exhale: spine rounds."},
+      {name:"Thread the Needle — Right Side",type:"check",met:2.0,note:"Sweep right arm up, slide under left. Right shoulder to mat."},
+      {name:"Side Bend — Right",type:"check",met:2.0,note:"Extend right arm overhead, lean left. Long arc through right side body."},
+      {name:"Low Lunge — Right Side",type:"check",met:2.5,note:"Right foot forward, left knee down. Sink hips. Feel left hip flexor open."},
+      {name:"Easy Twist — Right Side",type:"check",met:2.0,note:"From Low Lunge, left hand down, right arm opens to ceiling."},
+      {name:"Downward Dog",type:"check",met:3.0,note:"Inverted V. Press floor away. Pedal feet gently. Lengthen spine."},
+      {name:"Thread the Needle — Left Side",type:"check",met:2.0,note:"Sweep left arm up, slide under right. Left shoulder to mat."},
+      {name:"Side Bend — Left",type:"check",met:2.0,note:"Extend left arm overhead, lean right. Feel full left side open."},
+      {name:"Low Lunge — Left Side",type:"check",met:2.5,note:"Left foot forward, right knee down. Sink hips. Open right hip flexor."},
+      {name:"Easy Twist — Left Side",type:"check",met:2.0,note:"Right hand down, left arm opens to ceiling. Hold, breathe."},
+      {name:"Downward Dog",type:"check",met:3.0,note:"Reset and transition into standing sequence."},
+      {name:"Ragdoll",type:"check",met:2.0,note:"Stand, fold forward, soft knees. Let head and arms hang loose."},
+      {name:"Squat (Malasana)",type:"check",met:3.0,note:"Toes out, deep squat. Palms together, elbows press inner knees open."},
+      {name:"Sphinx",type:"check",met:2.0,note:"Face down, forearms on mat. Gently lift chest. Counteracts daily rounding."},
+      {name:"Child's Pose",type:"check",met:1.5,note:"Press back from Sphinx. Arms forward, forehead to floor. Breathe into back body."},
+      {name:"Seated Meditation",type:"check",met:1.2,note:"Comfortable seat. Close eyes. Observe breath without controlling it."},
+      {name:"Legs Up the Wall",type:"check",met:1.2,note:"Lie on back, legs up a wall. Completely passive. 5 min restorative finish."}
+    ]}
+  ]},
+  bands:{label:"🪢 Resistance Bands",subtitle:"Bonus — Anytime — 25–30 min",color:C.gold,colorLight:C.goldLight,phases:[
+    {name:"🌿 Lower Body",duration:"~10 min",exercises:[
+      {name:"Band Squat",type:"strength",sets:3,reps:"15",met:4.5,note:"Stand on band, hold ends at shoulders. Squat down, chest tall."},
+      {name:"Band Lateral Walk (Crab Walk)",type:"strength",sets:3,reps:"15 each direction",met:4.0,note:"Loop band above knees. Slight squat. Step sideways 15 steps each way."},
+      {name:"Band Glute Bridge",type:"strength",sets:3,reps:"15",met:4.0,note:"Band across hips. Push hips up, squeeze glutes at top for 2 sec."}
+    ]},
+    {name:"💪 Upper Body",duration:"~12 min",exercises:[
+      {name:"Band Pull-Apart",type:"strength",sets:3,reps:"15",met:3.5,note:"Hold band at chest height, arms extended. Pull hands apart until band touches chest."},
+      {name:"Band Seated Row",type:"strength",sets:3,reps:"12",met:4.0,note:"Feet pressing middle of band. Pull both ends toward lower chest, squeeze shoulder blades."},
+      {name:"Band Overhead Press",type:"strength",sets:3,reps:"12",met:4.0,note:"Stand on band, hold ends at shoulders. Press overhead. Band gets harder as you press higher."},
+      {name:"Band Bicep Curl",type:"strength",sets:2,reps:"12",met:3.5,note:"Stand on band, palms forward. Curl toward shoulders, elbows pinned at sides."}
+    ]},
+    {name:"⚪ Core",duration:"~8 min",exercises:[
+      {name:"Band Trunk Rotation",type:"strength",sets:2,reps:"12 each side",met:3.5,note:"Hold band with both hands, step to create tension. Rotate torso away, hips still."},
+      {name:"Planks",type:"timed",sets:3,seconds:30,restSeconds:20,met:4.0,note:"Forearms on floor, body rigid head to heels. Breathe steadily."}
+    ]}
+  ]},
+  ball:{label:"⚽ Stability Ball",subtitle:"Bonus — Anytime — 20–25 min",color:C.teal,colorLight:C.tealLight,phases:[
+    {name:"Full Body Circuit",duration:"20–25 min",exercises:[
+      {name:"Wall Squat with Ball",type:"strength",sets:3,reps:"12–15",met:4.5,note:"Ball between lower back and wall. Slide down until thighs parallel, hold 2 sec, push up."},
+      {name:"Ball Hamstring Curl",type:"strength",sets:3,reps:"12",met:5.0,note:"Heels on ball, hips bridged. Curl ball toward seat, then extend. Hips stay lifted."},
+      {name:"Ball Dumbbell Chest Press",type:"strength",sets:3,reps:"12",met:5.0,note:"Upper back on ball, hips up. Press dumbbells from chest. Core fires every rep."},
+      {name:"Ball Overhead Press (Seated)",type:"strength",sets:3,reps:"12",met:4.5,note:"Sit tall on ball. Press dumbbells overhead. Core fires continuously."},
+      {name:"Ball Back Extension",type:"strength",sets:2,reps:"15",met:3.5,note:"Face-down on ball, hips at center. Slowly lift chest, hold 2 sec, lower."},
+      {name:"Ball Plank",type:"timed",sets:3,seconds:25,restSeconds:20,met:5.0,note:"Forearms on ball. Body straight head to heels. Harder than floor plank!"},
+      {name:"Ball Seated Hip March",type:"strength",sets:2,reps:"20 total (alternating)",met:3.0,note:"Sit on ball, lift one knee toward chest, hold 1 sec, lower. Alternate."}
+    ]}
+  ]},
+  atwork:{label:"⚡ At-Work Mini",subtitle:"Anytime — Between Meetings — 5–6 min",color:C.coral,colorLight:C.coralLight,phases:[
+    {name:"Your Between-Meeting Reset",duration:"5–6 min",exercises:[
+      {name:"Standing Elbow to Knee Crunch",type:"strength",sets:1,reps:"20 (alternating)",met:3.5,note:"Hands behind head. Drive right elbow toward left knee as it rises. Alternate."},
+      {name:"Arm Circles",type:"reps",sets:1,reps:"20 (10 fwd + 10 back)",met:2.5,note:"Arms extended to the sides. 10 forward, 10 backward. Releases shoulder tension."},
+      {name:"Knee-Highs (Marches)",type:"strength",sets:1,reps:"40",met:4.0,note:"March in place, driving each knee toward hip height. Pump arms."},
+      {name:"Qigong Back Swinging Twists",type:"timed",seconds:20,met:2.5,note:"Feet wide, arms relaxed. Swing upper body side to side, arms flap against torso."},
+      {name:"Deep Breaths While Bouncing",type:"timed",seconds:40,met:2.0,note:"Gentle bounce on balls of feet. Inhale 4 counts, exhale 6 counts."},
+      {name:"Tapping (EFT-style)",type:"timed",seconds:45,met:1.5,note:"Tap: top of head, eyebrows, side of eye, under eye, under nose, chin, collarbone, side of hand."},
+      {name:"Chair Squats or Squats",type:"strength",sets:1,reps:"5–10",met:4.5,note:"Touch chair lightly and stand. Five squats daily = 1,800+ per year!"}
+    ]}
+  ]}
+};
+
+const MAIN_KEYS = ["gym","home","cardio","yoga"];
+const BONUS_KEYS = ["bands","ball","atwork"];
+const WORKOUT_COLORS = {gym:C.coral,home:C.lavender,cardio:C.teal,yoga:C.green,bands:C.gold,ball:C.teal,atwork:C.coral};
+const WORKOUT_ICONS = {gym:"💪",home:"🏠",cardio:"🚶",yoga:"🧘",bands:"🪢",ball:"⚽",atwork:"⚡"};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let weightLbs = 125;
+let weightKg = 56.7;
+let workoutHistory = [];
+let currentWorkoutKey = null;
+let sessionStartTime = null;
+let sessionTimerInterval = null;
+let sessionPhasesDone = 0;
+let sessionTotalPhases = 0;
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+function storageGet(key) {
+  try { return localStorage.getItem(key); } catch(e) { return null; }
+}
+function storageSet(key, val) {
+  try { localStorage.setItem(key, val); } catch(e) {}
+}
+function storageDelete(key) {
+  try { localStorage.removeItem(key); } catch(e) {}
+}
+
+// ─── CALORIE CALC ─────────────────────────────────────────────────────────────
+function calcCals(ex) {
+  const sets = ex.sets || 1;
+  let hours;
+  if (ex.type === "timed") {
+    const secs = ex.seconds || 60;
+    hours = (secs * sets + (ex.restSeconds||0) * (sets-1)) / 3600;
+  } else if (ex.type === "check") {
+    hours = ((ex.seconds||30) * sets) / 3600;
+  } else if (ex.type === "strength") {
+    hours = (sets * 45 + (sets-1) * 60) / 3600;
+  } else {
+    hours = (sets * 30) / 3600;
+  }
+  return Math.round(ex.met * weightKg * hours);
+}
+
+function workoutTotalCals(key) {
+  return WORKOUTS[key].phases.reduce((s,p) => s + p.exercises.reduce((ss,ex) => ss + calcCals(ex), 0), 0);
+}
+
+// ─── FORMATTING ───────────────────────────────────────────────────────────────
+function fmt(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return m + ":" + String(s).padStart(2,"0");
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function fmtDate(ds) {
+  const d = new Date(ds + "T12:00:00");
+  return d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+}
+
+// ─── SCREEN NAVIGATION ────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+function showWeight() { showScreen("weight"); }
+function showHistory() { renderHistory(); showScreen("history"); }
+function backToHome() {
+  clearInterval(sessionTimerInterval);
+  renderHome();
+  showScreen("home");
+}
+
+// ─── WEIGHT SCREEN ────────────────────────────────────────────────────────────
+document.getElementById("weight-input").addEventListener("input", function() {
+  weightLbs = parseFloat(this.value) || 125;
+  weightKg = weightLbs * 0.453592;
+  document.getElementById("weight-kg").textContent = "≈ " + weightKg.toFixed(1) + " kg";
+});
+
+function startApp() {
+  weightLbs = parseFloat(document.getElementById("weight-input").value) || 125;
+  weightKg = weightLbs * 0.453592;
+  document.getElementById("weight-btn").textContent = "⚖️ " + weightLbs;
+  loadHistory();
+  renderHome();
+  showScreen("home");
+}
+
+// ─── HISTORY LOAD/SAVE ────────────────────────────────────────────────────────
+function loadHistory() {
+  const raw = storageGet("workout-history");
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-30);
+      workoutHistory = parsed.filter(e => new Date(e.date) >= cutoff);
+    } catch(e) { workoutHistory = []; }
+  }
+  checkFirstOfMonth();
+}
+
+function saveHistoryEntry(entry) {
+  workoutHistory.push(entry);
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-30);
+  workoutHistory = workoutHistory.filter(e => new Date(e.date) >= cutoff);
+  storageSet("workout-history", JSON.stringify(workoutHistory));
+}
+
+function checkFirstOfMonth() {
+  const today = new Date();
+  if (today.getDate() !== 1 || workoutHistory.length === 0) return;
+  const thisMonth = today.getFullYear() + "-" + (today.getMonth()+1);
+  const lastPrompt = storageGet("last-export-prompt");
+  if (lastPrompt !== thisMonth) {
+    storageSet("last-export-prompt", thisMonth);
+    setTimeout(() => showExportModal(), 800);
+  }
+}
+
+// ─── HOME SCREEN ──────────────────────────────────────────────────────────────
+function renderHome() {
+  document.getElementById("weight-btn").textContent = "⚖️ " + weightLbs;
+
+  // History button
+  const streak = calcStreak();
+  let hbtn = "📊 " + workoutHistory.length + " sessions";
+  if (streak > 0) hbtn += " " + streak + "🔥";
+  document.getElementById("history-btn").textContent = hbtn;
+
+  // Today banner
+  const todayCount = workoutHistory.filter(e => e.date === todayStr()).length;
+  const banner = document.getElementById("today-banner");
+  if (todayCount > 0) {
+    banner.style.display = "block";
+    banner.textContent = "✓ " + todayCount + " workout" + (todayCount>1?"s":"") + " completed today!" + (streak>1?" "+streak+"-day streak 🔥":"");
+  } else {
+    banner.style.display = "none";
+  }
+
+  // Workout cards
+  renderCards("main-workout-cards", MAIN_KEYS);
+  renderCards("bonus-workout-cards", BONUS_KEYS);
+
+  // Calorie summary
+  let mainCals = 0;
+  document.getElementById("cal-main").innerHTML = MAIN_KEYS.map(k => {
+    const c = workoutTotalCals(k);
+    mainCals += c;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+      <div style="font-size:13px;color:${C.dark}">${WORKOUTS[k].label}</div>
+      <div style="font-size:13px;font-weight:700;color:${WORKOUT_COLORS[k]}">~${c} cal</div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("cal-bonus").innerHTML = BONUS_KEYS.map(k => {
+    const c = workoutTotalCals(k);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+      <div style="font-size:13px;color:${C.dark}">${WORKOUTS[k].label}</div>
+      <div style="font-size:13px;font-weight:700;color:${WORKOUT_COLORS[k]}">~${c} cal</div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("cal-total").textContent = "~" + mainCals + " cal";
+}
+
+function renderCards(containerId, keys) {
+  document.getElementById(containerId).innerHTML = keys.map(k => {
+    const w = WORKOUTS[k];
+    const c = workoutTotalCals(k);
+    const totalEx = w.phases.reduce((s,p) => s+p.exercises.length, 0);
+    const lastDone = [...workoutHistory].reverse().find(e => e.workoutKey === k);
+    const lastDoneStr = lastDone ? (lastDone.date === todayStr() ? " · ✓ Today" : " · ✓ " + fmtDate(lastDone.date)) : "";
+    return `<button onclick="startWorkout('${k}')" style="width:100%;background:#fff;border:none;border-radius:16px;margin-bottom:10px;padding:0;cursor:pointer;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden">
+      <div style="background:${WORKOUT_COLORS[k]};padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div style="color:#fff;font-weight:800;font-size:16px">${w.label}</div>
+        <div style="color:rgba(255,255,255,.85);font-size:11px;font-weight:600">${w.subtitle.split("—")[0].trim()}</div>
+      </div>
+      <div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;color:${C.gray}">${w.phases.length} phase${w.phases.length>1?"s":""} · ${totalEx} exercises<span style="color:${C.green}">${lastDoneStr}</span></div>
+        <div style="background:${WORKOUT_COLORS[k]}22;color:${WORKOUT_COLORS[k]};font-weight:700;border-radius:10px;padding:3px 10px;font-size:13px">~${c} cal</div>
+      </div>
+    </button>`;
+  }).join("");
+}
+
+// ─── WORKOUT SESSION ──────────────────────────────────────────────────────────
+function startWorkout(key) {
+  currentWorkoutKey = key;
+  sessionStartTime = Date.now();
+  sessionPhasesDone = 0;
+  sessionTotalPhases = WORKOUTS[key].phases.length;
+
+  const w = WORKOUTS[key];
+  const header = document.getElementById("workout-sticky-header");
+  header.style.background = w.color;
+  document.getElementById("wh-label").textContent = w.label;
+  document.getElementById("wh-subtitle").textContent = w.subtitle;
+  const totalCals = workoutTotalCals(key);
+  document.getElementById("wh-cals").textContent = "~" + totalCals + " cal total";
+  updateProgress();
+
+  // Render phases
+  const container = document.getElementById("workout-phases");
+  container.innerHTML = "";
+  w.phases.forEach((phase, pi) => renderPhase(container, phase, pi, w));
+
+  // Start session timer
+  clearInterval(sessionTimerInterval);
+  sessionTimerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+    document.getElementById("wh-timer").textContent = "⏱ " + fmt(elapsed);
+  }, 1000);
+
+  showScreen("workout");
+}
+
+function updateProgress() {
+  const pct = sessionTotalPhases > 0 ? Math.round((sessionPhasesDone / sessionTotalPhases) * 100) : 0;
+  document.getElementById("wh-progress").style.width = pct + "%";
+  const totalEx = WORKOUTS[currentWorkoutKey].phases.reduce((s,p) => s+p.exercises.length, 0);
+  document.getElementById("wh-pct").textContent = pct + "% complete · " + totalEx + " exercises";
+}
+
+function phaseComplete(phaseIndex) {
+  sessionPhasesDone++;
+  updateProgress();
+  if (sessionPhasesDone >= sessionTotalPhases) {
+    allPhasesComplete();
+  }
+}
+
+function allPhasesComplete() {
+  clearInterval(sessionTimerInterval);
+  const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+  const totalCals = workoutTotalCals(currentWorkoutKey);
+  const w = WORKOUTS[currentWorkoutKey];
+
+  saveHistoryEntry({
+    date: todayStr(),
+    workoutKey: currentWorkoutKey,
+    workoutLabel: w.label,
+    durationSecs: elapsed,
+    calories: totalCals,
+    exercises: w.phases.reduce((s,p) => s+p.exercises.length, 0)
+  });
+
+  const container = document.getElementById("workout-phases");
+  const card = document.createElement("div");
+  card.className = "fadein";
+  card.style.cssText = `background:${C.green};border-radius:16px;padding:20px 16px;text-align:center;color:#fff;margin-top:8px`;
+  card.innerHTML = `<div style="font-size:40px">🎉</div>
+    <div style="font-weight:800;font-size:20px;margin-top:4px">Workout Complete!</div>
+    <div style="font-size:14px;margin-top:6px;opacity:.9">${fmt(elapsed)} · ~${totalCals} calories burned</div>
+    <div style="font-size:12px;opacity:.8;margin-top:4px">✓ Saved to your 30-day history</div>
+    <button onclick="backToHome()" style="margin-top:16px;background:#fff;color:${C.green};border:none;border-radius:10px;padding:10px 24px;font-weight:700;font-size:15px;cursor:pointer">Back to Workouts</button>`;
+  container.appendChild(card);
+  card.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+// ─── PHASE RENDERING ──────────────────────────────────────────────────────────
+function renderPhase(container, phase, phaseIndex, workout) {
+  const phaseCals = phase.exercises.reduce((s,ex) => s + calcCals(ex), 0);
+  const total = phase.exercises.length;
+  const phaseId = "phase-" + phaseIndex;
+
+  const div = document.createElement("div");
+  div.style.marginBottom = "24px";
+  div.id = phaseId;
+
+  // Track completions
+  const completed = new Array(total).fill(false);
+  let doneCount = 0;
+
+  function checkPhaseComplete() {
+    if (doneCount >= total) {
+      counter.style.background = C.green;
+      topBtn.textContent = "✓ All Complete";
+      topBtn.style.borderColor = C.green;
+      topBtn.style.color = C.green;
+      topBtn.style.background = C.greenLight;
+      botBtn.textContent = "✓ All Complete";
+      botBtn.style.borderColor = C.green;
+      botBtn.style.color = C.green;
+      botBtn.style.background = C.greenLight;
+      phaseComplete(phaseIndex);
+    }
+  }
+
+  function markExercise(i) {
+    if (!completed[i]) {
+      completed[i] = true;
+      doneCount++;
+      counter.textContent = doneCount + "/" + total;
+      checkPhaseComplete();
+    }
+  }
+
+  function markAll() {
+    for (let i = 0; i < total; i++) markExercise(i);
+    // Trigger visual complete on all cards
+    div.querySelectorAll(".ex-card").forEach(c => c.dispatchEvent(new Event("mark-complete")));
+  }
+
+  // Header
+  const header = document.createElement("div");
+  header.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:10px";
+  const counter = document.createElement("div");
+  counter.style.cssText = `background:${workout.color};color:#fff;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700`;
+  counter.textContent = "0/" + total;
+  header.innerHTML = `<div><div style="font-weight:800;font-size:16px;color:${C.dark}">${phase.name}</div>${phase.duration ? `<div style="font-size:12px;color:${C.gray}">${phase.duration} · ~${phaseCals} cal</div>` : ""}</div>`;
+  header.appendChild(counter);
+  div.appendChild(header);
+
+  // Mark All button (factory)
+  function makeMarkAllBtn() {
+    const b = document.createElement("button");
+    b.textContent = "✓ Mark All Complete";
+    b.style.cssText = `width:100%;border:1.5px solid ${workout.color};background:transparent;color:${workout.color};border-radius:10px;padding:8px 0;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s`;
+    b.onclick = markAll;
+    return b;
+  }
+
+  const topBtn = makeMarkAllBtn();
+  const botBtn = makeMarkAllBtn();
+  div.appendChild(topBtn);
+
+  // Exercise cards
+  const exContainer = document.createElement("div");
+  exContainer.style.marginTop = "8px";
+  phase.exercises.forEach((ex, ei) => {
+    const card = renderExerciseCard(ex, ei, workout, () => markExercise(ei));
+    exContainer.appendChild(card);
+  });
+  div.appendChild(exContainer);
+  div.appendChild(botBtn);
+  container.appendChild(div);
+}
+
+// ─── EXERCISE CARD ────────────────────────────────────────────────────────────
+function renderExerciseCard(ex, idx, workout, onComplete) {
+  const cals = calcCals(ex);
+  const totalSets = ex.sets || 1;
+  const isTimed = ex.type === "timed";
+  const isCheck = ex.type === "check";
+  const isStrength = ex.type === "strength" || ex.type === "reps";
+
+  const card = document.createElement("div");
+  card.className = "ex-card";
+  card.style.cssText = `background:#fff;border:1.5px solid ${C.grayMid};border-radius:14px;margin-bottom:10px;overflow:hidden;transition:all .25s;box-shadow:0 1px 4px rgba(0,0,0,.06)`;
+
+  let isComplete = false;
+  let isExpanded = false;
+
+  function markDone() {
+    if (isComplete) return;
+    isComplete = true;
+    card.style.background = C.greenLight;
+    card.style.border = `1.5px solid ${C.green}`;
+    card.style.boxShadow = "none";
+    card.classList.add("burst");
+    setTimeout(() => card.classList.remove("burst"), 900);
+    iconEl.style.background = C.green;
+    iconEl.style.borderColor = C.green;
+    iconEl.innerHTML = `<span style="color:#fff;font-weight:700;font-size:17px">✓</span>`;
+    nameEl.style.textDecoration = "line-through";
+    nameEl.style.color = C.gray;
+    metaEl.innerHTML = metaEl.innerHTML + ` <span style="color:${C.green};font-weight:700">✓ Done!</span>`;
+    if (checkBtn) { checkBtn.style.background = C.green; checkBtn.textContent = "✓ Done"; }
+    if (timedBtn) { timedBtn.style.background = C.green; timedBtn.style.color = "#fff"; timedBtn.style.borderColor = C.green; timedBtn.textContent = "✓ Done"; }
+    onComplete();
+  }
+
+  // Listen for mark-complete event (from Mark All)
+  card.addEventListener("mark-complete", markDone);
+
+  // Header row
+  const headerRow = document.createElement("div");
+  headerRow.style.cssText = "display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer";
+  headerRow.onclick = () => {
+    isExpanded = !isExpanded;
+    detail.style.display = isExpanded ? "block" : "none";
+    chevron.textContent = isExpanded ? "▲" : "▼";
+  };
+
+  // Icon
+  const iconEl = document.createElement("div");
+  iconEl.style.cssText = `width:32px;height:32px;border-radius:50%;flex-shrink:0;background:${workout.colorLight};border:2px solid ${workout.color};display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .3s`;
+  iconEl.innerHTML = isTimed ? "⏱" : isCheck ? "☐" : "💪";
+
+  // Text
+  const textDiv = document.createElement("div");
+  textDiv.style.cssText = "flex:1;min-width:0";
+  const nameEl = document.createElement("div");
+  nameEl.style.cssText = `font-weight:700;font-size:15px;color:${C.dark}`;
+  nameEl.textContent = ex.name;
+  const metaEl = document.createElement("div");
+  metaEl.style.cssText = `font-size:12px;color:${C.gray};margin-top:1px`;
+  const metaText = isTimed ? (totalSets > 1 ? totalSets + "× " : "") + fmt(ex.seconds)
+    : isCheck ? "Tap to mark complete"
+    : totalSets + " sets × " + ex.reps;
+  metaEl.innerHTML = metaText + ` · <span style="color:${workout.color};font-weight:600">~${cals} cal</span>`;
+  textDiv.appendChild(nameEl);
+  textDiv.appendChild(metaEl);
+
+  // Right side controls
+  const rightDiv = document.createElement("div");
+  rightDiv.style.cssText = "display:flex;align-items:center;gap:6px;flex-shrink:0";
+
+  let checkBtn = null, timedBtn = null;
+
+  // Set pips for strength/reps
+  if (isStrength) {
+    const setsDone = new Array(totalSets).fill(false);
+    let setsCount = 0;
+    const pipsDiv = document.createElement("div");
+    pipsDiv.style.cssText = "display:flex;gap:5px";
+    for (let i = 0; i < totalSets; i++) {
+      const pip = document.createElement("button");
+      pip.style.cssText = `width:28px;height:28px;border-radius:50%;border:2px solid ${C.grayMid};background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s`;
+      pip.innerHTML = "";
+      const pipIdx = i;
+      pip.onclick = (e) => {
+        e.stopPropagation();
+        if (isComplete) return;
+        if (!setsDone[pipIdx]) {
+          setsDone[pipIdx] = true;
+          setsCount++;
+          pip.style.background = C.teal;
+          pip.style.borderColor = C.teal;
+          pip.innerHTML = `<span style="color:#fff;font-size:13px;font-weight:700">✓</span>`;
+          pip.style.animation = "pip-pop .35s ease-out";
+          setTimeout(() => pip.style.animation = "", 400);
+          if (setsCount >= totalSets) markDone();
+        } else {
+          setsDone[pipIdx] = false;
+          setsCount--;
+          pip.style.background = "#fff";
+          pip.style.borderColor = C.grayMid;
+          pip.innerHTML = "";
+        }
+      };
+      pipsDiv.appendChild(pip);
+    }
+    rightDiv.appendChild(pipsDiv);
+  }
+
+  // Check button for check-type
+  if (isCheck) {
+    checkBtn = document.createElement("button");
+    checkBtn.textContent = "Done";
+    checkBtn.style.cssText = `background:${workout.color};color:#fff;border:none;border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0`;
+    checkBtn.onclick = (e) => { e.stopPropagation(); markDone(); };
+    rightDiv.appendChild(checkBtn);
+  }
+
+  // Manual complete bubble for timed
+  if (isTimed) {
+    timedBtn = document.createElement("button");
+    timedBtn.textContent = "✓";
+    timedBtn.style.cssText = `background:${C.grayLight};color:${C.gray};border:1.5px solid ${C.grayMid};border-radius:8px;padding:5px 10px;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0;transition:all .2s`;
+    timedBtn.onclick = (e) => { e.stopPropagation(); markDone(); };
+    rightDiv.appendChild(timedBtn);
+  }
+
+  // Chevron
+  const chevron = document.createElement("span");
+  chevron.textContent = "▼";
+  chevron.style.cssText = `color:${C.gray};font-size:12px;flex-shrink:0`;
+  rightDiv.appendChild(chevron);
+
+  headerRow.appendChild(iconEl);
+  headerRow.appendChild(textDiv);
+  headerRow.appendChild(rightDiv);
+  card.appendChild(headerRow);
+
+  // Detail panel
+  const detail = document.createElement("div");
+  detail.style.cssText = "display:none;padding:0 14px 14px";
+
+  if (ex.note) {
+    const noteDiv = document.createElement("div");
+    noteDiv.style.cssText = `background:${workout.colorLight};border-radius:8px;padding:8px 10px;font-size:13px;color:${C.dark};line-height:1.5;margin-bottom:8px`;
+    noteDiv.textContent = ex.note;
+    detail.appendChild(noteDiv);
+  }
+
+  // Timer for timed exercises
+  if (isTimed) {
+    const timerDiv = buildTimerBlock(ex, workout.color, markDone);
+    detail.appendChild(timerDiv);
+  }
+
+  card.appendChild(detail);
+  return card;
+}
+
+// ─── TIMER BLOCK ──────────────────────────────────────────────────────────────
+function buildTimerBlock(ex, color, onAllDone) {
+  const seconds = ex.seconds || 60;
+  const restSeconds = ex.restSeconds || 0;
+  const totalSets = ex.sets || 1;
+
+  let currentSet = 1;
+  let phase = "work"; // work | rest | done
+  let timeLeft = seconds;
+  let running = false;
+  let tickInterval = null;
+
+  const wrap = document.createElement("div");
+
+  function render() {
+    const isDone = phase === "done";
+    const isRest = phase === "rest";
+    const bgColor = isDone ? C.greenLight : isRest ? C.goldLight : color + "22";
+    const borderColor = isDone ? C.green : isRest ? C.gold : color;
+    const displayColor = isDone ? C.green : isRest ? C.gold : color;
+
+    wrap.style.cssText = `background:${bgColor};border:1.5px solid ${borderColor};border-radius:12px;padding:10px 14px;margin-top:8px;display:flex;align-items:center;gap:12px`;
+    wrap.innerHTML = "";
+
+    const timeDiv = document.createElement("div");
+    timeDiv.style.cssText = "text-align:center;min-width:64px";
+    const timeNum = document.createElement("div");
+    timeNum.style.cssText = `font-size:${isDone?20:28}px;font-weight:700;font-family:monospace;color:${displayColor};line-height:1`;
+    timeNum.textContent = isDone ? "✓ Done" : fmt(timeLeft);
+    timeDiv.appendChild(timeNum);
+    if (totalSets > 1 && !isDone) {
+      const setLabel = document.createElement("div");
+      setLabel.style.cssText = `font-size:11px;color:${C.gray};margin-top:2px`;
+      setLabel.textContent = isRest ? "REST" : "Set " + currentSet + "/" + totalSets;
+      timeDiv.appendChild(setLabel);
+    }
+    wrap.appendChild(timeDiv);
+
+    if (!isDone) {
+      const playBtn = document.createElement("button");
+      playBtn.style.cssText = `background:${running ? C.coral : color};color:#fff;border:none;border-radius:8px;padding:7px 16px;font-weight:700;font-size:14px;cursor:pointer;min-width:70px`;
+      playBtn.textContent = running ? "⏸ Pause" : timeLeft < (isRest ? restSeconds : seconds) ? "▶ Resume" : "▶ Start";
+      playBtn.onclick = toggleTimer;
+      wrap.appendChild(playBtn);
+    }
+
+    const resetBtn = document.createElement("button");
+    resetBtn.style.cssText = `background:none;border:none;font-size:18px;cursor:pointer;color:${C.gray};padding:4px`;
+    resetBtn.textContent = "↺";
+    resetBtn.onclick = resetTimer;
+    wrap.appendChild(resetBtn);
+  }
+
+  function tick() {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(tickInterval); running = false;
+      if (phase === "work") {
+        if (restSeconds > 0 && currentSet < totalSets) {
+          phase = "rest"; timeLeft = restSeconds; render();
+          // auto start rest
+          running = true; tickInterval = setInterval(tick, 1000);
+        } else if (currentSet < totalSets) {
+          currentSet++; timeLeft = seconds; render();
+          running = true; tickInterval = setInterval(tick, 1000);
+        } else {
+          phase = "done"; timeLeft = 0; render(); onAllDone();
+        }
+      } else if (phase === "rest") {
+        currentSet++; phase = "work"; timeLeft = seconds; render();
+        running = true; tickInterval = setInterval(tick, 1000);
+      }
+    } else { render(); }
+  }
+
+  function toggleTimer() {
+    if (running) { clearInterval(tickInterval); running = false; }
+    else { running = true; tickInterval = setInterval(tick, 1000); }
+    render();
+  }
+
+  function resetTimer() {
+    clearInterval(tickInterval); running = false;
+    currentSet = 1; phase = "work"; timeLeft = seconds;
+    render();
+  }
+
+  render();
+  return wrap;
+}
+
+// ─── HISTORY SCREEN ───────────────────────────────────────────────────────────
+function calcStreak() {
+  const today = new Date();
+  let streak = 0;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().slice(0,10);
+    if (workoutHistory.some(e => e.date === ds)) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function renderHistory() {
+  const totalWorkouts = workoutHistory.length;
+  const totalCals = workoutHistory.reduce((s,e) => s+(e.calories||0), 0);
+  const totalMins = workoutHistory.reduce((s,e) => s+Math.round((e.durationSecs||0)/60), 0);
+  const streak = calcStreak();
+
+  // Stats
+  document.getElementById("hist-stats").innerHTML = [
+    {label:"Workouts",value:totalWorkouts,color:C.tealMid},
+    {label:"Calories",value:totalCals.toLocaleString(),color:C.coral},
+    {label:"Minutes",value:totalMins,color:C.gold},
+    {label:"Streak",value:streak+"🔥",color:C.green}
+  ].map(s => `<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px 6px;text-align:center">
+    <div style="color:${s.color};font-weight:800;font-size:17px;line-height:1">${s.value}</div>
+    <div style="color:rgba(255,255,255,.6);font-size:10px;margin-top:3px">${s.label}</div>
+  </div>`).join("");
+
+  // Calendar heatmap
+  const today = new Date();
+  const days = Array.from({length:30},(_,i) => {
+    const d = new Date(today); d.setDate(d.getDate()-(29-i));
+    return d.toISOString().slice(0,10);
+  });
+  const byDate = {};
+  workoutHistory.forEach(e => { if (!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+
+  document.getElementById("cal-day-labels").innerHTML = ["S","M","T","W","T","F","S"].map(d =>
+    `<div style="text-align:center;font-size:10px;color:${C.gray};font-weight:600">${d}</div>`).join("");
+
+  const startDow = new Date(days[0]+"T12:00:00").getDay();
+  const cells = [
+    ...Array.from({length:startDow},(_,i) => `<div></div>`),
+    ...days.map(d => {
+      const isToday = d === todayStr();
+      const count = (byDate[d]||[]).length;
+      const bg = count===0?C.grayLight:count===1?C.tealLight:count===2?C.tealMid:C.teal;
+      const border = isToday?`2px solid ${C.coral}`:count>0?`1px solid ${C.tealMid}`:"1px solid transparent";
+      const dayNum = parseInt(d.slice(8));
+      return `<div style="aspect-ratio:1;border-radius:6px;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;flex-direction:column">
+        <span style="font-size:9px;color:${count>0?C.navy:C.gray};font-weight:${isToday?800:500}">${dayNum}</span>
+        ${count>0?`<span style="font-size:8px;color:${C.teal};font-weight:700">${count}×</span>`:""}
+      </div>`;
+    })
+  ];
+  document.getElementById("cal-grid").innerHTML = cells.join("");
+
+  // Session list
+  const sessionsEl = document.getElementById("hist-sessions");
+  if (workoutHistory.length === 0) {
+    sessionsEl.innerHTML = `<div style="background:#fff;border-radius:14px;padding:24px 16px;text-align:center;color:${C.gray};font-size:14px">No workouts yet. Complete your first session and it will appear here!</div>`;
+  } else {
+    sessionsEl.innerHTML = [...workoutHistory].reverse().map(e => {
+      const col = WORKOUT_COLORS[e.workoutKey] || C.navy;
+      const icon = WORKOUT_ICONS[e.workoutKey] || "💪";
+      return `<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:${col}22;display:flex;align-items:center;justify-content:center;font-size:20px">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px;color:${C.dark}">${e.workoutLabel}</div>
+          <div style="font-size:12px;color:${C.gray};margin-top:2px">${fmtDate(e.date)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-weight:700;font-size:13px;color:${col}">~${e.calories} cal</div>
+          <div style="font-size:11px;color:${C.gray}">${fmt(e.durationSecs||0)}</div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // Buttons
+  document.getElementById("hist-buttons").innerHTML = workoutHistory.length > 0 ? `
+    <button onclick="doExport(false)" style="width:100%;background:${C.teal};color:#fff;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">⬇️ Download as Excel</button>
+    <button onclick="clearHistory()" style="width:100%;background:none;border:1px solid ${C.grayMid};border-radius:10px;padding:10px 0;color:${C.gray};font-size:13px;cursor:pointer">Clear all history</button>
+  ` : "";
+}
+
+function clearHistory() {
+  if (!confirm("Clear all 30-day history? This cannot be undone.")) return;
+  workoutHistory = [];
+  storageDelete("workout-history");
+  renderHistory();
+}
+
+// ─── EXPORT TO EXCEL ──────────────────────────────────────────────────────────
+function showExportModal() {
+  const today = new Date();
+  const prevMonth = new Date(today.getFullYear(), today.getMonth()-1, 1)
+    .toLocaleDateString("en-US",{month:"long",year:"numeric"});
+
+  document.getElementById("modal-month").innerHTML = `It's the 1st! Download your <strong>${prevMonth}</strong> workout history before it rolls off your 30-day log.`;
+
+  const totalCals = workoutHistory.reduce((s,e) => s+(e.calories||0), 0);
+  const totalMins = workoutHistory.reduce((s,e) => s+Math.round((e.durationSecs||0)/60), 0);
+  const activeDays = new Set(workoutHistory.map(e => e.date)).size;
+  document.getElementById("modal-stats").innerHTML = [
+    {label:"Sessions",value:workoutHistory.length},
+    {label:"Calories",value:totalCals.toLocaleString()},
+    {label:"Minutes",value:totalMins},
+    {label:"Active Days",value:activeDays}
+  ].map(s => `<div style="text-align:center">
+    <div style="font-weight:800;font-size:18px;color:${C.navy}">${s.value}</div>
+    <div style="font-size:11px;color:${C.gray}">${s.label}</div>
+  </div>`).join("");
+
+  const modal = document.getElementById("export-modal");
+  modal.style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("export-modal").style.display = "none";
+}
+
+function doExport(fromModal) {
+  if (fromModal) closeModal();
+
+  const today = new Date();
+  const prevMonth = new Date(today.getFullYear(), today.getMonth()-1, 1)
+    .toLocaleDateString("en-US",{month:"long",year:"numeric"});
+
+  // Build CSV content (no XLSX dependency needed — CSV opens in Excel perfectly)
+  const sessionRows = [
+    ["#","Date","Day","Workout","Duration","Calories Burned","Exercises"],
+    ...workoutHistory.map((e,i) => [
+      i+1,
+      fmtDate(e.date),
+      new Date(e.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long"}),
+      e.workoutLabel,
+      fmt(e.durationSecs||0),
+      e.calories,
+      e.exercises
+    ])
+  ];
+
+  const totalCals = workoutHistory.reduce((s,e)=>s+(e.calories||0),0);
+  const totalMins = workoutHistory.reduce((s,e)=>s+Math.round((e.durationSecs||0)/60),0);
+  const activeDays = new Set(workoutHistory.map(e=>e.date)).size;
+  const workoutCounts = {}, workoutCals = {};
+  workoutHistory.forEach(e => {
+    workoutCounts[e.workoutLabel] = (workoutCounts[e.workoutLabel]||0)+1;
+    workoutCals[e.workoutLabel] = (workoutCals[e.workoutLabel]||0)+(e.calories||0);
+  });
+
+  const summaryRows = [
+    ["Metric","Value"],
+    ["Reporting Period", prevMonth],
+    ["Total Sessions", workoutHistory.length],
+    ["Active Days", activeDays],
+    ["Total Calories Burned", totalCals],
+    ["Total Minutes", totalMins],
+    ["Avg Calories/Session", workoutHistory.length ? Math.round(totalCals/workoutHistory.length) : 0],
+    ["Avg Duration (min)", workoutHistory.length ? Math.round(totalMins/workoutHistory.length) : 0],
+    ["",""],
+    ["-- Breakdown by Workout --",""],
+    ...Object.entries(workoutCounts).map(([label,count]) => [label, count+" sessions · "+workoutCals[label]+" cal"])
+  ];
+
+  const byDate = {};
+  workoutHistory.forEach(e => { if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e.workoutLabel); });
+  const start = new Date(); start.setDate(start.getDate()-29);
+  const calRows = [["Date","Day","Workouts Completed","Sessions"]];
+  for (let i=0; i<30; i++) {
+    const d = new Date(start); d.setDate(d.getDate()+i);
+    const ds = d.toISOString().slice(0,10);
+    calRows.push([fmtDate(ds), d.toLocaleDateString("en-US",{weekday:"long"}), (byDate[ds]||[]).join(", ")||"—", (byDate[ds]||[]).length||0]);
+  }
+
+  // Combine into one CSV with section separators
+  function toCSV(rows) {
+    return rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+  }
+
+  const csvContent = "SESSION LOG\n" + toCSV(sessionRows) +
+    "\n\n\nMONTHLY SUMMARY\n" + toCSV(summaryRows) +
+    "\n\n\n30-DAY CALENDAR\n" + toCSV(calRows);
+
+  const filename = "Wellness_Workouts_" + prevMonth.replace(" ","_") + ".csv";
+  const blob = new Blob([csvContent], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 100);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+// Load any saved history on page open
+const savedHistory = storageGet("workout-history");
+if (savedHistory) {
+  try {
+    const parsed = JSON.parse(savedHistory);
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-30);
+    workoutHistory = parsed.filter(e => new Date(e.date) >= cutoff);
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
