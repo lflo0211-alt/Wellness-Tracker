@@ -1,1 +1,1 @@
-# Wellness-Workout-Tracker
+# Wellness-Tracker
